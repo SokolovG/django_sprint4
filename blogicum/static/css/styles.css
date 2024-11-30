@@ -1,0 +1,81 @@
+.comment {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 15px;
+    background-color: #f9f9f9;
+}
+
+.comment .comment-author {
+    font-weight: bold;
+}
+
+.comment .comment-date {
+    font-size: 0.9em;
+    color: #999;
+}
+
+.comment-text {
+    margin-top: 5px;
+    line-height: 1.5;
+}
+
+/* Контейнер для карточек пользователей */
+.user-cards-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  padding: 20px;
+}
+
+/* Карточка пользователя */
+.user-card {
+  display: flex;
+  align-items: center;
+  background-color: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 20px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.user-card:hover {
+  transform: translateY(-5px);
+}
+
+/* Аватар пользователя */
+.user-card-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 20px;
+}
+
+/* Контент карточки пользователя */
+.user-card-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-card-username {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0;
+}
+
+.user-card-info {
+  font-size: 0.9em;
+  color: #6c757d;
+  margin: 10px 0;
+}
+
+/* Кнопка просмотра профиля */
+.user-card a.btn {
+  align-self: flex-start;
+  font-size: 0.9em;
+}
