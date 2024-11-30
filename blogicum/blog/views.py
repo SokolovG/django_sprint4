@@ -219,4 +219,3 @@ class CategoryPostsListView(ListView):
                 'description').filter(
                     is_published=True), slug=self.kwargs['category_slug'])
         return context
-
