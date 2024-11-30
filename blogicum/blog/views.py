@@ -50,11 +50,13 @@ class ProfileListView(ListView):
             return Post.objects.select_related(
                 'category',
                 'location',
-                'author').filter(author__username=username).order_by('-pub_date')
+                'author').filter(
+                author__username=username).order_by('-pub_date')
 
         else:
 
-            return get_posts().filter(author__username=username).order_by('-pub_date')
+            return get_posts().filter(
+                author__username=username).order_by('-pub_date')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -206,7 +208,8 @@ class CategoryPostsListView(ListView):
 
     def get_queryset(self):
         category_slug = self.kwargs['category_slug']
-        return get_posts().filter(category__slug=category_slug).order_by('-pub_date',)
+        return get_posts().filter(
+            category__slug=category_slug).order_by('-pub_date',)
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -217,5 +220,3 @@ class CategoryPostsListView(ListView):
                     is_published=True), slug=self.kwargs['category_slug'])
         return context
 
-
-# TODO: UpdateProfileView, UserForm, not Working
