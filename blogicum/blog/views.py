@@ -30,6 +30,59 @@ def get_posts():
     return post_queryset
 
 
+# Классы, отвечающие за профиль пользователя.
+class ProfileListView(ListView):
+    """
+    Данный класс отвечает за отображение профиля пользователя.
+    Использует модель Post.
+    """
+
+    model = Post
+    template_name = 'blog/profile.html'
+    paginate_by = 10
+
+    # Добавляем в context нашего пользователя с проверкой по username.
+
+    def get_queryset(self):
+        username = self.kwargs['username']
+        if self.request.user.username == username:
+
+            return Post.objects.select_related(
+                'category',
+                'location',
+                'author').filter(
+                author__username=username).order_by('-pub_date')
+
+        else:
+
+            return get_posts().filter(
+                author__username=username).order_by('-pub_date')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['profile'] = get_object_or_404(
+            User, username=self.kwargs['username'])
+        return context
+
+
+class ProfileUpdateView(LoginRequiredMixin, UpdateView):
+    """
+    Данный класс отвечает за изменение профиля пользователя.
+    Использует модель пользователя.
+    """
+
+    model = User
+    template_name = 'blog/user.html'
+    form_class = UserForm
+
+    def get_object(self, queryset=None):
+        return self.request.user
+
+    def get_success_url(self):
+        return reverse('blog:profile',
+                       kwargs={'username': self.object.username})
+
+
 # Классы, отвечающие за работу с публикациями.
 class PostListView(ListView):
     """
@@ -109,6 +162,40 @@ class PostDeleteView(PostMixin, OnlyAuthorMixin, DeleteView):
         return context
 
 
+# Классы и функции, отвечающие за работу с комментариями.
+class CommentDeleteView(CommentMixin, OnlyAuthorMixin, DeleteView):
+    """
+    Данный класс отвечает за удаление комментария.
+    Использует модель Comment.
+    """
+
+    pk_url_kwarg = 'comment_id'
+
+
+class CommentEditView(CommentMixin, OnlyAuthorMixin, UpdateView):
+    """
+    Данный класс отвечает за редактирование комментария.
+    Использует модель Comment.
+    """
+
+    form_class = CommentForm
+    pk_url_kwarg = 'comment_id'
+
+
+class CommentCreateView(CommentMixin, LoginRequiredMixin, CreateView):
+    post_data = None
+    form_class = CommentForm
+
+    def dispatch(self, request, *args, **kwargs):
+        self.post_data = get_object_or_404(Post, pk=self.kwargs['pk'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user
+        form.instance.post = self.post_data
+        return super().form_valid(form)
+
+
 # Класс, отвечающий за работу с категориями.
 class CategoryPostsListView(ListView):
     """Представление отображения списка постов
@@ -132,103 +219,3 @@ class CategoryPostsListView(ListView):
                 'description').filter(
                     is_published=True), slug=self.kwargs['category_slug'])
         return context
-
-
-# Классы, отвечающие за работу с комментариями.
-class CommentCreateView(CommentMixin, LoginRequiredMixin, CreateView):
-    post_data = None
-    form_class = CommentForm
-
-    def dispatch(self, request, *args, **kwargs):
-        self.post_data = get_object_or_404(Post, pk=self.kwargs['pk'])
-        return super().dispatch(request, *args, **kwargs)
-
-    def form_valid(self, form):
-        form.instance.author = self.request.user
-        form.instance.post = self.post_data
-        return super().form_valid(form)
-
-
-class CommentEditView(CommentMixin, OnlyAuthorMixin, UpdateView):
-    """
-    Данный класс отвечает за редактирование комментария.
-    Использует модель Comment.
-    """
-
-    form_class = CommentForm
-    pk_url_kwarg = 'comment_id'
-
-
-class CommentDeleteView(CommentMixin, OnlyAuthorMixin, DeleteView):
-    """
-    Данный класс отвечает за удаление комментария.
-    Использует модель Comment.
-    """
-
-    pk_url_kwarg = 'comment_id'
-
-
-# Классы, отвечающие за профиль пользователя.
-class ProfileListView(ListView):
-    """
-    Данный класс отвечает за отображение профиля пользователя.
-    Использует модель Post.
-    """
-
-    model = Post
-    template_name = 'blog/profile.html'
-    paginate_by = 10
-
-    # Добавляем в context нашего пользователя с проверкой по username.
-
-    def get_queryset(self):
-        username = self.kwargs['username']
-        if self.request.user.username == username:
-
-            return Post.objects.select_related(
-                'category',
-                'location',
-                'author').filter(
-                author__username=username).order_by('-pub_date')
-
-        else:
-
-            return get_posts().filter(
-                author__username=username).order_by('-pub_date')
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['profile'] = get_object_or_404(
-            User, username=self.kwargs['username'])
-        return context
-
-
-class ProfileUpdateView(LoginRequiredMixin, UpdateView):
-    """
-    Данный класс отвечает за изменение профиля пользователя.
-    Использует модель пользователя.
-    """
-
-    model = User
-    template_name = 'blog/user.html'
-    form_class = UserForm
-
-    def get_object(self, queryset=None):
-        return self.request.user
-
-    def get_success_url(self):
-        return reverse('blog:profile',
-                       kwargs={'username': self.object.username})
-
-
-post_list = PostListView.as_view()
-post_detail = PostDetailView.as_view()
-post_create = PostCreateView.as_view()
-post_update = PostUpdateView.as_view()
-post_delete = PostDeleteView.as_view()
-category_posts_list = CategoryPostsListView.as_view()
-comment_create = CommentCreateView.as_view()
-comment_edit = CommentEditView.as_view()
-comment_delete = CommentDeleteView.as_view()
-profile_list = ProfileListView.as_view()
-profile_update = ProfileUpdateView.as_view()
