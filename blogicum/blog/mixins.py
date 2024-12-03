@@ -1,9 +1,9 @@
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.urls import reverse
 from django.views.generic import View
 
 from .forms import PostForm
 from .models import Comment, Post
-from django.urls import reverse
 
 
 class CommentMixin(LoginRequiredMixin, View):

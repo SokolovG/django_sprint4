@@ -1,33 +1,20 @@
-from django.db.models import Count
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth import get_user_model
 from django.views.generic import (ListView, DetailView,
                                   CreateView, UpdateView, DeleteView)
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse
-from django.utils import timezone
 
 from .forms import CommentForm, UserForm
 from .mixins import CommentMixin, PostMixin, OnlyAuthorMixin
 from .models import Post, Category
-
+from .constants import PAGINATE_PER_PAGE
+from .querysets import get_posts
 
 User = get_user_model()
 
 
 # Вспомогательные функции.
-def get_posts():
-    post_queryset = Post.objects.select_related(
-        'category',
-        'location',
-        'author'
-    ).filter(
-        is_published=True,
-        category__is_published=True,
-        pub_date__lte=timezone.now()
-    ).annotate(comment_count=Count('comments'))
-
-    return post_queryset
 
 
 # Классы, отвечающие за профиль пользователя.
@@ -39,7 +26,7 @@ class ProfileListView(ListView):
 
     model = Post
     template_name = 'blog/profile.html'
-    paginate_by = 10
+    paginate_by = PAGINATE_PER_PAGE
 
     # Добавляем в context нашего пользователя с проверкой по username.
 
@@ -92,7 +79,7 @@ class PostListView(ListView):
 
     model = Post
     template_name = 'blog/index.html'
-    paginate_by = 10
+    paginate_by = PAGINATE_PER_PAGE
     queryset = get_posts().order_by('-pub_date')
 
 
@@ -204,7 +191,7 @@ class CategoryPostsListView(ListView):
 
     model = Post
     template_name = 'blog/category.html'
-    paginate_by = 10
+    paginate_by = PAGINATE_PER_PAGE
 
     def get_queryset(self):
         category_slug = self.kwargs['category_slug']
